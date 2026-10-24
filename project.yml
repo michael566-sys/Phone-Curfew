@@ -1,0 +1,155 @@
+name: PhoneCurfew
+
+options:
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+
+# BUNDLE_PREFIX, APP_GROUP_ID and DEVELOPMENT_TEAM live in Configs/*.xcconfig.
+configFiles:
+  Debug: Configs/Base.xcconfig
+  Release: Configs/Base.xcconfig
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+    TARGETED_DEVICE_FAMILY: "1"
+    SUPPORTS_MACCATALYST: NO
+    CODE_SIGN_STYLE: Automatic
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+
+packages:
+  CurfewKit:
+    path: Packages/CurfewKit
+
+targetTemplates:
+  # Shared by all five targets: Family Controls + App Group, and CurfewKit.
+  CurfewTarget:
+    platform: iOS
+    dependencies:
+      - package: CurfewKit
+        product: CurfewKit
+
+targets:
+  PhoneCurfew:
+    type: application
+    templates: [CurfewTarget]
+    sources: [App]
+    dependencies:
+      - target: PhoneCurfewMonitor
+      - target: PhoneCurfewShieldConfiguration
+      - target: PhoneCurfewShieldAction
+      - target: PhoneCurfewReport
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(BUNDLE_PREFIX).phonecurfew
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: Phone Curfew
+        CurfewAppGroupID: $(APP_GROUP_ID)
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UIRequiresFullScreen: true
+        NSFaceIDUsageDescription: Phone Curfew uses Face ID to confirm an early unlock.
+    entitlements:
+      path: App/PhoneCurfew.entitlements
+      properties:
+        com.apple.developer.family-controls: true
+        com.apple.security.application-groups: [$(APP_GROUP_ID)]
+
+  PhoneCurfewMonitor:
+    type: app-extension
+    templates: [CurfewTarget]
+    sources: [Extensions/Monitor]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(BUNDLE_PREFIX).phonecurfew.monitor
+    info:
+      path: Extensions/Monitor/Info.plist
+      properties:
+        CFBundleDisplayName: Phone Curfew Monitor
+        CurfewAppGroupID: $(APP_GROUP_ID)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.deviceactivity.monitor-extension
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).CurfewMonitor
+    entitlements:
+      path: Extensions/Monitor/Monitor.entitlements
+      properties:
+        com.apple.developer.family-controls: true
+        com.apple.security.application-groups: [$(APP_GROUP_ID)]
+
+  PhoneCurfewShieldConfiguration:
+    type: app-extension
+    templates: [CurfewTarget]
+    sources: [Extensions/ShieldConfiguration]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(BUNDLE_PREFIX).phonecurfew.shieldconfig
+    info:
+      path: Extensions/ShieldConfiguration/Info.plist
+      properties:
+        CFBundleDisplayName: Phone Curfew Shield
+        CurfewAppGroupID: $(APP_GROUP_ID)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.ManagedSettingsUI.shield-configuration-service
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).CurfewShieldConfiguration
+    entitlements:
+      path: Extensions/ShieldConfiguration/ShieldConfiguration.entitlements
+      properties:
+        com.apple.developer.family-controls: true
+        com.apple.security.application-groups: [$(APP_GROUP_ID)]
+
+  PhoneCurfewShieldAction:
+    type: app-extension
+    templates: [CurfewTarget]
+    sources: [Extensions/ShieldAction]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(BUNDLE_PREFIX).phonecurfew.shieldaction
+    info:
+      path: Extensions/ShieldAction/Info.plist
+      properties:
+        CFBundleDisplayName: Phone Curfew Shield Action
+        CurfewAppGroupID: $(APP_GROUP_ID)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.ManagedSettings.shield-action-service
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).CurfewShieldAction
+    entitlements:
+      path: Extensions/ShieldAction/ShieldAction.entitlements
+      properties:
+        com.apple.developer.family-controls: true
+        com.apple.security.application-groups: [$(APP_GROUP_ID)]
+
+  # ExtensionKit extension: embedded in the app's Extensions/ folder, not PlugIns/.
+  PhoneCurfewReport:
+    type: extensionkit-extension
+    templates: [CurfewTarget]
+    sources: [Extensions/Report]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(BUNDLE_PREFIX).phonecurfew.report
+    info:
+      path: Extensions/Report/Info.plist
+      properties:
+        CFBundleDisplayName: Phone Curfew Report
+        CurfewAppGroupID: $(APP_GROUP_ID)
+        EXAppExtensionAttributes:
+          EXExtensionPointIdentifier: com.apple.deviceactivityui.report-extension
+    entitlements:
+      path: Extensions/Report/Report.entitlements
+      properties:
+        com.apple.developer.family-controls: true
+        com.apple.security.application-groups: [$(APP_GROUP_ID)]
+
+schemes:
+  PhoneCurfew:
+    build:
+      targets:
+        PhoneCurfew: all
+    run:
+      config: Debug
+    archive:
+      config: Release

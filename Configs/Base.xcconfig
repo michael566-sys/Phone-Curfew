@@ -1,0 +1,10 @@
+// Shared settings for every target. Override any of these in Configs/Local.xcconfig (git-ignored).
+
+// Replaces <you> in bundle IDs and the App Group.
+BUNDLE_PREFIX = com.songyuanzhang
+APP_GROUP_ID = group.$(BUNDLE_PREFIX).phonecurfew
+
+// Your Apple Developer team ID (needed to sign for a device).
+DEVELOPMENT_TEAM =
+
+#include? "Local.xcconfig"

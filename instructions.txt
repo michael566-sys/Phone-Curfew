@@ -1,0 +1,6 @@
+Plan an iOS 17+ SwiftUI app called PhoneCurfew (display name "Phone Curfew")
+using XcodeGen. Targets: main app, DeviceActivityMonitor extension,
+ShieldConfiguration extension, ShieldAction extension, DeviceActivityReport
+extension. All share App Group group.com.<you>.phonecurfew and the Family
+Controls capability. Use a shared Swift package CurfewKit for models and storage.
+Don't write code yet — show me the plan.
