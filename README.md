@@ -1,4 +1,4 @@
-# NightLock
+# Phone Curfew
 
 A strict iOS screen-time app that limits iPhone use during the day and blocks apps entirely at bedtime (10:30pm to 6:30am, local time). Early unlocks require a 3-hour wait plus a code sent to an accountability partner (or the device passcode), and nothing unlocks within 3 hours of wake time. Daily, weekly and monthly usage statistics are shown in-app.
 
@@ -16,7 +16,7 @@ flowchart TB
     end
 
     APP["Main app (SwiftUI)<br/>Picker, limits, strict mode, unlock requests"]
-    KIT["NightLockKit + App Group<br/>Rules, 3-hour unlock state, time zone logic"]
+    KIT["CurfewKit + App Group<br/>Rules, 3-hour unlock state, time zone logic"]
 
     subgraph Ext["App extensions"]
         MON["Activity monitor<br/>Bedtime, limits, strict"]
@@ -48,7 +48,7 @@ The project has five targets (one app, four extensions) plus a shared Swift pack
 | Layer | Component | Runs where | Responsibility |
 | --- | --- | --- | --- |
 | App | Main app (SwiftUI) | iPhone, foreground | Setup, app picker, limits, strict mode, unlock requests, stats screen |
-| Shared | NightLockKit + App Group | iPhone, all targets | Models, persisted rules, unlock state machine, time zone logic |
+| Shared | CurfewKit + App Group | iPhone, all targets | Models, persisted rules, unlock state machine, time zone logic |
 | Extension | DeviceActivityMonitor | iPhone, background | Applies and lifts shields at schedule start/end and when limits are hit |
 | Extension | ShieldConfiguration + ShieldAction | iPhone, on shield display | Custom "Go to sleep" block screen and button behavior |
 | Extension | DeviceActivityReport | iPhone, sandboxed | Renders daily, weekly and monthly usage statistics |
@@ -76,16 +76,16 @@ The only target the user interacts with directly.
 - **Stats tab.** Embeds `DeviceActivityReport` with Day, Week and Month filters.
 - **Fallback enforcement.** If the app opens during bedtime and the shield isn't active, it re-applies it, because DeviceActivity callbacks can occasionally fire late.
 
-### NightLockKit + App Group
+### CurfewKit + App Group
 
-A local Swift package linked into every target. It shares state through the App Group container `group.com.<you>.nightlock`.
+A local Swift package linked into every target. It shares state through the App Group container `group.com.<you>.phonecurfew`.
 
 - **Models and storage.** Encoded `FamilyActivitySelection`s, schedules, limits, strict flag, partner status, and dated shield-hit counters.
 - **Unlock state machine.** `idle → waiting (3h) → ready (15 min) → unlocked (15 min) → idle`, plus `expired` and `refused`.
 - **Time zone logic.** Every wall-clock comparison (10:30pm, 3:30am, 6:30am) goes through one helper that uses `TimeZone.current` and `Calendar.current`, fetched fresh each call.
 - **Email normalization.** `normalizeEmail()` lowercases, strips `+tags`, removes Gmail dots and maps googlemail.com to gmail.com.
 
-Extensions have tight memory limits, so NightLockKit stays dependency-free.
+Extensions have tight memory limits, so CurfewKit stays dependency-free.
 
 ### Activity monitor extension (DeviceActivityMonitor)
 
